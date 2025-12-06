@@ -1,0 +1,13 @@
+{
+  "n": 4,
+  "flights": [
+    {"from": 0, "to": 1, "price": 100},
+    {"from": 1, "to": 2, "price": 100},
+    {"from": 2, "to": 0, "price": 100},
+    {"from": 1, "to": 3, "price": 600},
+    {"from": 2, "to": 3, "price": 200}
+  ],
+  "src": 0,
+  "dst": 3,
+  "k": 1
+}
