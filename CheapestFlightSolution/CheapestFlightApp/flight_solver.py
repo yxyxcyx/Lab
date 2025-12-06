@@ -3,19 +3,10 @@ from __future__ import annotations
 import math
 from typing import Iterable, List, Sequence, Tuple, Union
 
-
 Flight = Tuple[int, int, int]
 RawFlight = Union[Sequence[int], Sequence[float], dict]
 
-
 class FlightSolver:
-    """
-    Compute the cheapest flight price within a maximum number of stops using Bellman-Ford.
-
-    Bellman-Ford with a temporary array per iteration ensures we never exceed the allowed
-    stop budget in a single relaxation pass.
-    """
-
     def __init__(self, data: dict):
         self.n = int(data["n"])
         self.src = int(data["src"])

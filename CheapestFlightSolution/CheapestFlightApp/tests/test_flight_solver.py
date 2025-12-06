@@ -182,6 +182,89 @@ class FlightSolverTests(unittest.TestCase):
         solver = FlightSolver(data)
         self.assertEqual(solver.find_cheapest_price(), -1)
 
+    # Test disconnected graph clusters: src and dst in completely separate subgraphs
+    # Cluster A: nodes 0,1,2 fully connected. Cluster B: nodes 3,4,5 fully connected.
+    # No edges between clusters. src=0 (in A), dst=5 (in B). Should return -1.
+    def test_disconnected_clusters(self):
+        data = {
+            "n": 6,
+            "flights": [
+                # Cluster A: nodes 0, 1, 2
+                [0, 1, 10],
+                [1, 2, 10],
+                [2, 0, 10],
+                [0, 2, 15],
+                # Cluster B: nodes 3, 4, 5
+                [3, 4, 20],
+                [4, 5, 20],
+                [5, 3, 20],
+                [3, 5, 25],
+            ],
+            "src": 0,
+            "dst": 5,
+            "k": 10,
+        }
+        solver = FlightSolver(data)
+        self.assertEqual(solver.find_cheapest_price(), -1)
+
+    # Test k equals n-1 (max possible stops, can visit every node)
+    # Long cheap path vs short expensive path - large k allows finding cheaper route
+    def test_max_stops_k_equals_n_minus_1(self):
+        data = {
+            "n": 5,
+            "flights": [
+                # Long cheap path: 0->1->2->3->4 = 10+10+10+10 = 40
+                [0, 1, 10],
+                [1, 2, 10],
+                [2, 3, 10],
+                [3, 4, 10],
+                # Short expensive path: 0->4 = 100
+                [0, 4, 100],
+            ],
+            "src": 0,
+            "dst": 4,
+            "k": 3,
+        }
+        solver = FlightSolver(data)
+        self.assertEqual(solver.find_cheapest_price(), 40)
+
+    # Test tie-breaking: two paths with EXACT same cost but different stops
+    # Path A: 0->1->3 = 50+50 = 100 (1 stop)
+    # Path B: 0->2->1->3 = 30+20+50 = 100 (2 stops)
+    # Both valid, algorithm should return 100 without crashing
+    def test_tie_breaking_same_cost_different_stops(self):
+        data = {
+            "n": 4,
+            "flights": [
+                [0, 1, 50],
+                [1, 3, 50],
+                [0, 2, 30],
+                [2, 1, 20],
+            ],
+            "src": 0,
+            "dst": 3,
+            "k": 2,
+        }
+        solver = FlightSolver(data)
+        self.assertEqual(solver.find_cheapest_price(), 100)
+
+    # Sanity test: ensure algorithm picks strictly cheaper path with duplicate edges
+    # Two edges from 0->1 with different costs, should use the cheaper one
+    def test_strictly_cheaper_path_preferred(self):
+        data = {
+            "n": 3,
+            "flights": [
+                [0, 1, 100],
+                [0, 1, 50],
+                [1, 2, 10],
+            ],
+            "src": 0,
+            "dst": 2,
+            "k": 1,
+        }
+        solver = FlightSolver(data)
+        self.assertEqual(solver.find_cheapest_price(), 60)
+
 
 if __name__ == "__main__":
     unittest.main()
