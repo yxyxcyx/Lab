@@ -1,4 +1,7 @@
+import json
+import os
 import unittest
+from pathlib import Path
 
 from flight_solver import FlightSolver
 
@@ -264,6 +267,37 @@ class FlightSolverTests(unittest.TestCase):
         }
         solver = FlightSolver(data)
         self.assertEqual(solver.find_cheapest_price(), 60)
+
+
+class InputJsonTests(unittest.TestCase):
+    """Tests that validate and run the actual data/input.json file."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Load input.json once for all tests in this class."""
+        # Path: tests/ -> parent is CheapestFlightApp/ -> data/input.json
+        cls.input_path = Path(__file__).parent.parent / "data" / "input.json"
+        if not cls.input_path.exists():
+            raise FileNotFoundError(f"input.json not found at {cls.input_path}")
+        with cls.input_path.open("r", encoding="utf-8") as f:
+            cls.data = json.load(f)
+
+    def test_input_json_is_valid(self):
+        """Test that input.json can be loaded and passes all validation."""
+        # This will raise ValueError if any validation fails
+        solver = FlightSolver(self.data)
+        # If we get here, validation passed
+        self.assertIsNotNone(solver)
+
+    def test_input_json_produces_result(self):
+        """Test that input.json produces a valid result (int >= -1)."""
+        solver = FlightSolver(self.data)
+        result = solver.find_cheapest_price()
+        # Result should be -1 (no path) or a non-negative integer (cost)
+        self.assertIsInstance(result, int)
+        self.assertGreaterEqual(result, -1)
+        print(f"\n  [input.json] Cheapest price from {self.data['src']} to {self.data['dst']} "
+              f"with k={self.data['k']}: {result}")
 
 
 if __name__ == "__main__":
